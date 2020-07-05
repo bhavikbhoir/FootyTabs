@@ -1,13 +1,19 @@
 {
-  "homepage": "https://github.com/bhavikbhoir/react-trial.git",
-  "name": "react-trial",
+  "name": "footytabs",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "bootstrap": "^4.5.0",
     "cra-template": "1.0.3",
+    "luxon": "^1.24.1",
     "react": "16.13.1",
+    "react-bootstrap": "^1.0.1",
     "react-dom": "16.13.1",
-    "react-scripts": "3.4.1"
+    "react-icons": "^3.10.0",
+    "react-modal": "^3.11.2",
+    "react-scripts": "3.4.1",
+    "semantic-ui-react": "^0.88.2",
+    "weather-icons": "^1.3.2"
   },
   "scripts": {
     "start": "react-scripts start",
