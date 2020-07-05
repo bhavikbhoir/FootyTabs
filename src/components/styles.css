@@ -53,6 +53,11 @@ h3 {
   font-weight: 600;
   margin: 0 5px;
 }
+.logovideo{
+  /* width: 10rem;
+  height: 10rem; */
+  text-align: center;
+}
 .top-right {
   position: fixed;
   top: 2vh;
@@ -122,8 +127,9 @@ h2 {
   padding-right: 3px;
 }
 .ReactModal__Overlay{
-    background-image: url(../assets/tunnel.jpg);
-    background-size: cover;
+  background-image: url(../assets/tunnel.jpg);
+  background-size: cover;
+  background-position: center;
 }
 .modal-content{
   top: 50%;
@@ -164,10 +170,11 @@ h2 {
   padding: 5px 10px;
 }
 .center-right{
-    position: fixed;
-    top: 35%;
-    right: 2vh;
-    width: 450px;
+  position: fixed;
+  top: 35%;
+  right: 2vh;
+  width: 450px;
+  text-align: center;
 }
 .dropdown-toggle:active, .dropdown-toggle:focus, .dropdown-toggle:hover{
     box-shadow: none!important;
@@ -368,9 +375,9 @@ h2 {
   .dropdown-toggle::after{
       display: none;
   }
-  .center-right{
+  /* .center-right{
       width: 500px;
-  }
+  } */
   .carousel-indicators{
       display: none;
   }

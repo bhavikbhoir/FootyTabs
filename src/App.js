@@ -28,9 +28,10 @@ import Dashboard from '../src/components/dashboard';
 import Searchbar from '../src/components/searchbar';
 // import Header from './Header';
 import Trialname from '../src/components/trialname';
+import Logo from './components/logo';
 
 
-const NAME_LS = 'NAME_LS';
+const JNAME_LS = 'JNAME_LS';
 
 const customStyles = {
   content: {
@@ -57,7 +58,7 @@ class App extends Component {
 
     this.state = {
       time,
-      name: [],
+      name: '',
       isNameRequired: false,
       salutation: this.determineSalutation(time.hour),
       quote: null,
@@ -78,9 +79,10 @@ class App extends Component {
   }
 
   closeModal() {
-    this.setState({modalIsOpen: false});
     this.setState({name: this.state.inputValue});
-    localStorage.setItem(NAME_LS, this.state.inputValue);
+    localStorage.setItem(JNAME_LS, this.state.inputValue);
+    this.setState({modalIsOpen: false});
+    
   }
 
   handleChange(e) {
@@ -107,7 +109,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const name = localStorage.getItem(NAME_LS);
+    const name = localStorage.getItem(JNAME_LS);
     if (name) {
       this.setState({name});
     } else {
@@ -192,8 +194,10 @@ class App extends Component {
   }
 
   logout = () => {
-      this.setState({name: ''});
-      this.setState({modalIsOpen: true});
+    this.setState({name: ''});
+    localStorage.setItem(JNAME_LS, this.state.name);
+    localStorage.clear();
+    this.setState({modalIsOpen: true});
   }
 
   render() {
@@ -202,6 +206,9 @@ class App extends Component {
         <div className="bg-wrapper">
           
         <div className="top-left">
+          <div>
+            <Logo />
+          </div>
             <div>
               <p>Welcome {this.state.name}</p>
               <Trialname />
@@ -229,7 +236,11 @@ class App extends Component {
               style={customStyles}
               contentLabel="name-modal"
             >
+              <div>
+                  <Logo />
+                </div>
               <div className="modal-content">
+                
                 <div className="modal-title">What's your Jersey Name?</div>
                   <div className="modal-input" >
                     <input name="name" type="text" onChange={this.handleChange}/>
