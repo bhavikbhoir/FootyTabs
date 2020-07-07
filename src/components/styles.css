@@ -410,3 +410,78 @@ h2 {
     opacity: .5;
     transition: opacity .15s ease;
 }
+@media screen and (max-width: 678px){
+  .centered{
+    top: 25%;
+  }
+  .logovideo video{
+    width: 3rem!important;
+    height: 3rem!important;
+  }
+  #time, #ampm, #greetings{
+    font-size: 2em;
+  }
+  .center-right{
+    width: 100vw;
+    right: 0vh;
+  }
+  .searchbar{
+    display: inline-flex;
+    background: transparent;
+    opacity: 1;
+    overflow: visible;
+    width: 210px;
+    height: 40px;
+    border: 2px solid white;
+    border-radius: 25px;
+  }
+  .searchbar:hover, .searchbar:active, .searchbar:focus + .search svg{
+    background: white;
+    opacity: 1;
+    overflow: visible;
+    width: 210px;
+    height: 40px;
+    border: 2px solid white;
+    border-radius: 25px;
+    color: black;
+  }
+  .searchbar:hover svg{
+    color: black;
+  }
+  .search input{
+    border: none;
+    outline: none;
+    background: none;
+    width: 150px;
+    height: 35px;
+    /* margin: 2px 5px; */
+  }
+  .search input{
+    width: 150px;
+    padding: 5px;
+    font-size: 14px;
+  }
+  .search input::placeholder{
+    font-size: 14px;
+  }
+  .search .btn{
+    padding: .375rem 0rem;
+    /* margin-left: -2rem; */
+  }
+  .searchbar .dropdown-menu{
+    left: -120px!important;
+  }
+  .search .dropdown-menu:hover, .search .dropdown-menu:active, .search .dropdown-menu:focus{
+    min-width: auto!important;
+    left: -120px!important;
+  }
+  .search .dropdown-item svg, .search .dropdown-item img{
+    width: 16px!important;
+    height: 16px!important;
+  } 
+  .search .dropdown-item{
+    font-size: 14px;
+    color: white!important;
+    padding: 1px;
+  }
+}
