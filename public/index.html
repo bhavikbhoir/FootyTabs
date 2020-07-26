@@ -43,4 +43,28 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCJ8KOzUFnI9w09OOJc1HYTE0qiMms4ARM",
+    authDomain: "footy-tabs.firebaseapp.com",
+    databaseURL: "https://footy-tabs.firebaseio.com",
+    projectId: "footy-tabs",
+    storageBucket: "footy-tabs.appspot.com",
+    messagingSenderId: "843151716251",
+    appId: "1:843151716251:web:2546c91390d2e735607b3e",
+    measurementId: "G-6E0G6RLCB9"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+</script>
 </html>
