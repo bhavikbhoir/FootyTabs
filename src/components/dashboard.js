@@ -1,45 +1,112 @@
 import React, { Component } from 'react';
 import Carousel from 'react-bootstrap/Carousel';
+import './dashboard.css';
 
 export default class Dashboard extends Component {
+    state = {
+        standings: [],
+        scorers: [],
+        matches: [],
+        loading: true
+    };
+
+    componentDidMount() {
+        // TheSportsDB - Free API, no key needed, no CORS issues
+        const LEAGUE_ID = '4328'; // Premier League
+
+        Promise.all([
+            fetch(`https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=${LEAGUE_ID}&s=2025-2026`),
+            fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${LEAGUE_ID}`)
+        ])
+        .then(([standingsRes, matchesRes]) => 
+            Promise.all([standingsRes.json(), matchesRes.json()])
+        )
+        .then(([standingsData, matchesData]) => {
+            this.setState({
+                standings: standingsData.table || [],
+                matches: (matchesData.events || []).slice(0, 10),
+                loading: false
+            });
+        })
+        .catch(() => {
+            this.setState({ loading: false });
+        });
+    }
+
     render() {
+        const { standings, matches, loading } = this.state;
+
+        if (loading) {
+            return <div className="dashboard-loading">Loading Premier League data...</div>;
+        }
+
         return (
             <Carousel>
-            <Carousel.Item>
-            <iframe 
-            frameborder="0"  
-            scrolling="yes" 
-            width="450" height="300" 
-            src="https://www.fctables.com/england/premier-league/iframe/?type=table&lang_id=2&country=67&template=10&team=&timezone=Pacific/Midway&time=24&po=1&ma=1&wi=1&dr=1&los=1&gf=1&ga=1&gd=1&pts=1&ng=0&form=0&width=430&height=300&font=Verdana&fs=11&lh=22&bg=FFFFFF&fc=333333&logo=1&tlink=1&scfs=22&scfc=333333&scb=1&sclg=1&teamls=80&ths=1&thb=1&thba=FFFFFF&thc=000000&bc=dddddd&hob=f5f5f5&hobc=ebe7e7&lc=333333&sh=1&hfb=1&hbc=3bafda&hfc=FFFFFF"></iframe>
-            </Carousel.Item>
-            <Carousel.Item>
-            <iframe 
-            frameborder="0"  
-            scrolling="vertical" 
-            width="450" height="300" 
-            src="https://www.fctables.com/england/premier-league/iframe=/?type=top-scorers&lang_id=2&country=67&template=10&team=&timezone=America/New_York&time=24&limit=30&ppo=1&pte=1&pgo=1&pma=1&pas=1&ppe=1&width=450&height=300&font=Verdana&fs=11&lh=20&bg=FFFFFF&fc=333333&logo=1&tlink=1&ths=1&thb=1&thba=FFFFFF&thc=000000&bc=dddddd&hob=f5f5f5&hobc=ebe7e7&lc=333333&sh=1&hfb=1&hbc=3bafda&hfc=FFFFFF"></iframe>
-            </Carousel.Item>
-            <Carousel.Item>
-            <iframe 
-            frameborder="0"  
-            scrolling="vertical" 
-            width="450" height="300" 
-            src="https://www.fctables.com/england/premier-league/iframe/?type=league-scores&lang_id=2&country=67&template=10&team=180231&timezone=America/New_York&time=24&width=450&height=400&font=Verdana&fs=11&lh=20&bg=FFFFFF&fc=333333&logo=1&tlink=1&scoreb=f4454f&scorefc=FFFFFF&sgdcoreb=8f8d8d&sgdcorefc=FFFFFF&sh=1&hfb=1&hbc=3bafda&hfc=FFFFFF"></iframe>
-            </Carousel.Item>
-            <Carousel.Item>
-            <iframe 
-            frameborder="0"  
-            scrolling="no" 
-            width="450" height="170" 
-            src="https://www.fctables.com/teams/arsenal-180231/iframe/?type=team-last-match&lang_id=2&country=67&template=10&team=180231&timezone=America/New_York&time=24&width=450&height=150&font=Verdana&fs=11&lh=20&bg=FFFFFF&fc=333333&logo=1&tlink=1&scfs=22&scfc=333333&scb=1&sclg=1&teamls=80&sh=1&hfb=1&hbc=3bafda&hfc=FFFFFF"></iframe>
-            
-            <iframe 
-            frameborder="0"  
-            scrolling="no" 
-            width="450" height="170" 
-            src="https://www.fctables.com/teams/arsenal-180231/iframe/?type=team-next-match&lang_id=2&country=67&template=10&team=180231&timezone=America/New_York&time=24&width=450&height=150&font=Verdana&fs=11&lh=20&bg=FFFFFF&fc=333333&logo=1&tlink=1&scfs=22&scfc=333333&scb=1&sclg=1&teamls=80&sh=1&hfb=1&hbc=3bafda&hfc=FFFFFF"></iframe>
-            </Carousel.Item>
-            </Carousel>        
-            )
+                <Carousel.Item>
+                    <div className="dashboard-widget">
+                        <h3>Premier League Table 2025-26</h3>
+                        <table className="standings-table">
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Team</th>
+                                    <th>P</th>
+                                    <th>W</th>
+                                    <th>D</th>
+                                    <th>L</th>
+                                    <th>Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {standings.map((team, idx) => (
+                                    <tr key={idx}>
+                                        <td>{team.intRank || idx + 1}</td>
+                                        <td className="team-name">{team.strTeam}</td>
+                                        <td>{team.intPlayed}</td>
+                                        <td>{team.intWin}</td>
+                                        <td>{team.intDraw}</td>
+                                        <td>{team.intLoss}</td>
+                                        <td><strong>{team.intPoints}</strong></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Carousel.Item>
+
+                <Carousel.Item>
+                    <div className="dashboard-widget">
+                        <h3>Upcoming Fixtures</h3>
+                        <div className="matches-list">
+                            {matches.length > 0 ? matches.map(match => (
+                                <div key={match.idEvent} className="match-item">
+                                    <div className="match-date">
+                                        {match.dateEvent} - {match.strTime || 'TBD'}
+                                    </div>
+                                    <div className="match-teams">
+                                        <span>{match.strHomeTeam}</span>
+                                        <span className="vs">vs</span>
+                                        <span>{match.strAwayTeam}</span>
+                                    </div>
+                                </div>
+                            )) : <p>No upcoming fixtures available</p>}
+                        </div>
+                    </div>
+                </Carousel.Item>
+
+                <Carousel.Item>
+                    <div className="dashboard-widget">
+                        <h3>About Premier League</h3>
+                        <div className="info-content">
+                            <p>The Premier League is the top tier of English football.</p>
+                            <p><strong>Current Season:</strong> 2024-25</p>
+                            <p><strong>Teams:</strong> 20</p>
+                            <p><strong>Founded:</strong> 1992</p>
+                            <p>Data provided by TheSportsDB</p>
+                        </div>
+                    </div>
+                </Carousel.Item>
+            </Carousel>
+        );
     }
 }
