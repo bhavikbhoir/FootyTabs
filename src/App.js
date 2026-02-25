@@ -10,6 +10,8 @@ import Dashboard from '../src/components/dashboard';
 import Searchbar from '../src/components/searchbar';
 import Trialname from '../src/components/trialname';
 import Logo from './components/logo';
+import { analytics } from './firebase';
+import { logEvent } from 'firebase/analytics';
 
 
 const JNAME_LS = 'JNAME_LS';
@@ -49,7 +51,7 @@ class App extends Component {
       },
       location: null,
       temperature: null,
-      weatherAPIKey: '594d083c4f45203a1d8cf6c1f7dd0a0b',
+      weatherAPIKey: process.env.REACT_APP_WEATHER_API_KEY,
       weatherIcon: null,
       modalIsOpen: false,
       inputValue: ''
@@ -116,6 +118,14 @@ class App extends Component {
         salutation: this.determineSalutation(time.hour)
       });
     }, 1000 * 1);
+
+    // Log page view to Firebase Analytics
+    if (analytics) {
+      logEvent(analytics, 'page_view', {
+        page_title: 'FootyTabs Home',
+        page_location: window.location.href
+      });
+    }
   }
 
   determineSalutation(hour) {
