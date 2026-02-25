@@ -10,11 +10,14 @@ import Dashboard from '../src/components/dashboard';
 import Searchbar from '../src/components/searchbar';
 import Trialname from '../src/components/trialname';
 import Logo from './components/logo';
+import Settings from './components/Settings';
 import { analytics } from './firebase';
 import { logEvent } from 'firebase/analytics';
+import { DEFAULT_TEAM } from './constants/teams';
 
 
 const JNAME_LS = 'JNAME_LS';
+const TEAM_LS = 'TEAM_LS';
 
 const customStyles = {
   content: {
@@ -54,11 +57,33 @@ class App extends Component {
       weatherAPIKey: process.env.REACT_APP_WEATHER_API_KEY,
       weatherIcon: null,
       modalIsOpen: false,
-      inputValue: ''
+      inputValue: '',
+      favoriteTeam: localStorage.getItem(TEAM_LS) || DEFAULT_TEAM,
+      settingsOpen: false,
+      useFahrenheit: localStorage.getItem('TEMP_UNIT') === 'F',
+      weatherDescription: null
     };
 
     this.closeModal = this.closeModal.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.toggleSettings = this.toggleSettings.bind(this);
+    this.handleTeamChange = this.handleTeamChange.bind(this);
+    this.toggleTempUnit = this.toggleTempUnit.bind(this);
+  }
+
+  toggleTempUnit() {
+    const newUnit = !this.state.useFahrenheit;
+    this.setState({ useFahrenheit: newUnit });
+    localStorage.setItem('TEMP_UNIT', newUnit ? 'F' : 'C');
+  }
+
+  toggleSettings() {
+    this.setState({ settingsOpen: !this.state.settingsOpen });
+  }
+
+  handleTeamChange(teamId) {
+    this.setState({ favoriteTeam: teamId });
+    localStorage.setItem(TEAM_LS, teamId);
   }
 
   closeModal() {
@@ -160,6 +185,8 @@ class App extends Component {
   }
 
   updateWeather() {
+    if (!this.state.weatherAPIKey) return;
+    
     fetch(
       `http://api.openweathermap.org/data/2.5/weather?APPID=${
         this.state.weatherAPIKey
@@ -168,13 +195,18 @@ class App extends Component {
       }`
     )
       .then(resp => resp.json())
-      .then(resp =>
+      .then(resp => {
+        const tempC = Math.round(resp.main.temp - 273.15);
         this.setState({
           location: resp.name,
-          temperature: Math.round(resp.main.temp - 273.15),
-          weatherIcon: this.determineWeatherCondition(resp.weather[0].main)
-        })
-      );
+          temperature: tempC,
+          weatherIcon: this.determineWeatherCondition(resp.weather[0].main),
+          weatherDescription: resp.weather[0].description
+        });
+      })
+      .catch(() => {
+        // Silently fail if weather API is unavailable
+      });
   }
 
   getTime() {
@@ -215,11 +247,30 @@ class App extends Component {
           </div>
 
           <div className="text-right top-right weather">
-            <div>
-              <i className={`wi ${this.state.weatherIcon}`} />&nbsp;<span id="weather" />
-              {this.state.temperature}&#8451;
-            </div>
-            <h5 id="location">{this.state.location}</h5>
+            {this.state.temperature !== null ? (
+              <>
+                <div className="weather-main">
+                  <i className={`wi ${this.state.weatherIcon}`} />
+                  <span className="temp-value">
+                    {this.state.useFahrenheit 
+                      ? Math.round(this.state.temperature * 9/5 + 32)
+                      : this.state.temperature}°
+                  </span>
+                  <button className="temp-toggle" onClick={this.toggleTempUnit}>
+                    {this.state.useFahrenheit ? 'F' : 'C'}
+                  </button>
+                </div>
+                {this.state.weatherDescription && (
+                  <p className="weather-desc">{this.state.weatherDescription}</p>
+                )}
+                <h5 id="location">{this.state.location}</h5>
+              </>
+            ) : (
+              <div className="weather-unavailable">
+                <i className="wi wi-na" />
+                <p>Weather unavailable</p>
+              </div>
+            )}
           </div>
           <div className="text-center centered">
             <div className="block-text">
@@ -254,29 +305,26 @@ class App extends Component {
           </div>
           <div className="center-right dashboard">
             <h3>Your dashboard</h3>
-            <Dashboard />
+            <Dashboard favoriteTeam={this.state.favoriteTeam} />
           </div>
           <div className="text-center bottom-third quote">
             <div id="quote-text">{this.state.quote}</div>
           </div>
           <div className="text-right bottom-right">
-          <Dropdown id="settings">
-            <Dropdown.Toggle>
-            <FiSettings/>
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu>
-              <Dropdown.Item eventKey="1" onClick={this.logout}>Logout</Dropdown.Item>
-              {/* <Dropdown.Item eventKey="2">Blue</Dropdown.Item>
-              <Dropdown.Item eventKey="3" active>
-                Orange
-              </Dropdown.Item>
-              <Dropdown.Item eventKey="1">Red-Orange</Dropdown.Item> */}
-            </Dropdown.Menu>
-          </Dropdown>
-            {/* <div id="settings">
-              <button><i class="FiSettings"><FiSettings/></i> Settings</button>
-            </div> */}
+          <button 
+            className="settings-icon-btn" 
+            onClick={this.toggleSettings}
+            title="Settings"
+          >
+            <FiSettings />
+          </button>
+          <Settings
+            isOpen={this.state.settingsOpen}
+            onClose={this.toggleSettings}
+            favoriteTeam={this.state.favoriteTeam}
+            onTeamChange={this.handleTeamChange}
+            onLogout={this.logout}
+          />
           </div>
         </div>
       </div>

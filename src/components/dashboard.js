@@ -5,27 +5,67 @@ import './dashboard.css';
 export default class Dashboard extends Component {
     state = {
         standings: [],
-        scorers: [],
         matches: [],
-        loading: true
+        lastMatches: [],
+        teamInfo: null,
+        loading: true,
+        lastUpdated: null,
+        refreshInterval: null,
+        currentTeamId: null
     };
 
     componentDidMount() {
-        // TheSportsDB - Free API, no key needed, no CORS issues
+        this.fetchData();
+        // Auto-refresh every 30 minutes
+        const interval = setInterval(() => this.fetchData(), 30 * 60 * 1000);
+        this.setState({ refreshInterval: interval });
+    }
+
+    componentWillUnmount() {
+        if (this.state.refreshInterval) {
+            clearInterval(this.state.refreshInterval);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        // Refresh when team changes
+        if (prevProps.favoriteTeam !== this.props.favoriteTeam) {
+            // Clear old team data immediately
+            this.setState({ 
+                teamInfo: null,
+                lastMatches: [],
+                currentTeamId: null
+            });
+            this.fetchData();
+        }
+    }
+
+    fetchData = () => {
         const LEAGUE_ID = '4328'; // Premier League
+        const { favoriteTeam } = this.props;
+
+        this.setState({ loading: true });
 
         Promise.all([
             fetch(`https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=${LEAGUE_ID}&s=2025-2026`),
-            fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${LEAGUE_ID}`)
+            fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${LEAGUE_ID}`),
+            fetch(`https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=${favoriteTeam}`),
+            fetch(`https://www.thesportsdb.com/api/v1/json/3/lookupteam.php?id=${favoriteTeam}`)
         ])
-        .then(([standingsRes, matchesRes]) => 
-            Promise.all([standingsRes.json(), matchesRes.json()])
+        .then(([standingsRes, matchesRes, lastMatchesRes, teamRes]) => 
+            Promise.all([standingsRes.json(), matchesRes.json(), lastMatchesRes.json(), teamRes.json()])
         )
-        .then(([standingsData, matchesData]) => {
+        .then(([standingsData, matchesData, lastMatchesData, teamData]) => {
+            // Ensure we're using the current favoriteTeam
+            const currentTeam = this.props.favoriteTeam;
             this.setState({
                 standings: standingsData.table || [],
-                matches: (matchesData.events || []).slice(0, 10),
-                loading: false
+                matches: (matchesData.events || []).slice(0, 15),
+                lastMatches: (lastMatchesData.results || []).slice(0, 5),
+                teamInfo: teamData.teams?.[0] || null,
+                loading: false,
+                lastUpdated: new Date(),
+                currentTeamId: currentTeam
             });
         })
         .catch(() => {
@@ -33,80 +73,205 @@ export default class Dashboard extends Component {
         });
     }
 
-    render() {
-        const { standings, matches, loading } = this.state;
+    getTimeSinceUpdate = () => {
+        if (!this.state.lastUpdated) return '';
+        const minutes = Math.floor((new Date() - this.state.lastUpdated) / 60000);
+        if (minutes < 1) return 'Just now';
+        if (minutes === 1) return '1 min ago';
+        return `${minutes} mins ago`;
+    }
 
-        if (loading) {
+    getMatchResult = (match, teamId) => {
+        if (!match.intHomeScore || !match.intAwayScore) return null;
+        
+        const isHome = match.idHomeTeam === teamId;
+        const teamScore = isHome ? parseInt(match.intHomeScore) : parseInt(match.intAwayScore);
+        const oppScore = isHome ? parseInt(match.intAwayScore) : parseInt(match.intHomeScore);
+        
+        if (teamScore > oppScore) return 'W';
+        if (teamScore < oppScore) return 'L';
+        return 'D';
+    }
+
+    render() {
+        const { standings, matches, lastMatches, teamInfo, loading, currentTeamId } = this.state;
+        const { favoriteTeam } = this.props;
+        
+        // Use currentTeamId from state to ensure data consistency
+        const activeTeamId = currentTeamId || favoriteTeam;
+
+        if (loading && !standings.length) {
             return <div className="dashboard-loading">Loading Premier League data...</div>;
         }
 
-        return (
-            <Carousel>
-                <Carousel.Item>
-                    <div className="dashboard-widget">
-                        <h3>Premier League Table 2025-26</h3>
-                        <table className="standings-table">
-                            <thead>
-                                <tr>
-                                    <th>Pos</th>
-                                    <th>Team</th>
-                                    <th>P</th>
-                                    <th>W</th>
-                                    <th>D</th>
-                                    <th>L</th>
-                                    <th>Pts</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {standings.map((team, idx) => (
-                                    <tr key={idx}>
-                                        <td>{team.intRank || idx + 1}</td>
-                                        <td className="team-name">{team.strTeam}</td>
-                                        <td>{team.intPlayed}</td>
-                                        <td>{team.intWin}</td>
-                                        <td>{team.intDraw}</td>
-                                        <td>{team.intLoss}</td>
-                                        <td><strong>{team.intPoints}</strong></td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Carousel.Item>
+        // Filter matches for favorite team
+        const teamMatches = matches.filter(m => 
+            m.idHomeTeam === activeTeamId || m.idAwayTeam === activeTeamId
+        ).slice(0, 10);
 
-                <Carousel.Item>
-                    <div className="dashboard-widget">
-                        <h3>Upcoming Fixtures</h3>
-                        <div className="matches-list">
-                            {matches.length > 0 ? matches.map(match => (
-                                <div key={match.idEvent} className="match-item">
-                                    <div className="match-date">
-                                        {match.dateEvent} - {match.strTime || 'TBD'}
+        // Get team's position in table
+        const teamStanding = standings.find(t => t.idTeam === activeTeamId);
+        
+        // Get team name - only use teamInfo if it matches the active team
+        const teamInfoMatches = teamInfo?.idTeam === activeTeamId;
+        const teamName = (teamInfoMatches ? teamInfo?.strTeam : null) || teamStanding?.strTeam || 'Your Team';
+
+        return (
+            <div>
+                <div className="dashboard-header">
+                    <span className="last-updated">{this.getTimeSinceUpdate()}</span>
+                    <button className="refresh-btn" onClick={this.fetchData} title="Refresh">
+                        ↻
+                    </button>
+                </div>
+                <Carousel>
+                    {/* Team Overview */}
+                    {teamStanding && (
+                        <Carousel.Item>
+                            <div className="dashboard-widget">
+                                <h3>{teamName}</h3>
+                                <div className="team-overview">
+                                    <div className="team-stat">
+                                        <div className="stat-label">Position</div>
+                                        <div className="stat-value">{teamStanding.intRank}</div>
                                     </div>
-                                    <div className="match-teams">
-                                        <span>{match.strHomeTeam}</span>
-                                        <span className="vs">vs</span>
-                                        <span>{match.strAwayTeam}</span>
+                                    <div className="team-stat">
+                                        <div className="stat-label">Points</div>
+                                        <div className="stat-value">{teamStanding.intPoints}</div>
+                                    </div>
+                                    <div className="team-stat">
+                                        <div className="stat-label">Played</div>
+                                        <div className="stat-value">{teamStanding.intPlayed}</div>
+                                    </div>
+                                    <div className="team-stat">
+                                        <div className="stat-label">Form</div>
+                                        <div className="stat-value form-string">{teamStanding.strForm || 'N/A'}</div>
                                     </div>
                                 </div>
-                            )) : <p>No upcoming fixtures available</p>}
-                        </div>
-                    </div>
-                </Carousel.Item>
+                                <div className="team-record">
+                                    <span className="record-item win">W: {teamStanding.intWin}</span>
+                                    <span className="record-item draw">D: {teamStanding.intDraw}</span>
+                                    <span className="record-item loss">L: {teamStanding.intLoss}</span>
+                                    <span className="record-item">GD: {teamStanding.intGoalDifference}</span>
+                                </div>
+                            </div>
+                        </Carousel.Item>
+                    )}
 
-                <Carousel.Item>
-                    <div className="dashboard-widget">
-                        <h3>About Premier League</h3>
-                        <div className="info-content">
-                            <p>The Premier League is the top tier of English football.</p>
-                            <p><strong>Current Season:</strong> 2024-25</p>
-                            <p><strong>Teams:</strong> 20</p>
-                            <p><strong>Founded:</strong> 1992</p>
-                            <p>Data provided by TheSportsDB</p>
+                    {/* Recent Results */}
+                    {lastMatches.length > 0 && (
+                        <Carousel.Item>
+                            <div className="dashboard-widget">
+                                <h3>Recent Results</h3>
+                                <div className="matches-list">
+                                    {lastMatches.map(match => {
+                                        const result = this.getMatchResult(match, favoriteTeam);
+                                        const isHome = match.idHomeTeam === activeTeamId;
+                                        return (
+                                            <div key={match.idEvent} className="match-item result-item">
+                                                <div className="match-date">
+                                                    {match.dateEvent}
+                                                </div>
+                                                <div className="match-teams">
+                                                    <span className={isHome ? 'team-bold' : ''}>{match.strHomeTeam}</span>
+                                                    <span className="score">{match.intHomeScore} - {match.intAwayScore}</span>
+                                                    <span className={!isHome ? 'team-bold' : ''}>{match.strAwayTeam}</span>
+                                                </div>
+                                                {result && <span className={`result-badge ${result.toLowerCase()}`}>{result}</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </Carousel.Item>
+                    )}
+
+                    {/* Upcoming Fixtures */}
+                    {teamMatches.length > 0 && (
+                        <Carousel.Item>
+                            <div className="dashboard-widget">
+                                <h3>Upcoming Fixtures</h3>
+                                <div className="matches-list">
+                                    {teamMatches.map(match => {
+                                        const isHome = match.idHomeTeam === activeTeamId;
+                                        return (
+                                            <div key={match.idEvent} className="match-item favorite-match">
+                                                <div className="match-date">
+                                                    {match.dateEvent} - {match.strTime || 'TBD'}
+                                                </div>
+                                                <div className="match-teams">
+                                                    <span className={isHome ? 'team-bold' : ''}>{match.strHomeTeam}</span>
+                                                    <span className="vs">vs</span>
+                                                    <span className={!isHome ? 'team-bold' : ''}>{match.strAwayTeam}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </Carousel.Item>
+                    )}
+
+                    {/* League Table */}
+                    <Carousel.Item>
+                        <div className="dashboard-widget">
+                            <h3>Premier League Table</h3>
+                            <table className="standings-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pos</th>
+                                        <th>Team</th>
+                                        <th>P</th>
+                                        <th>W</th>
+                                        <th>D</th>
+                                        <th>L</th>
+                                        <th>Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {standings.map((team, idx) => (
+                                        <tr key={idx} className={team.idTeam === activeTeamId ? 'favorite-team' : ''}>
+                                            <td>{team.intRank || idx + 1}</td>
+                                            <td className="team-name">{team.strTeam}</td>
+                                            <td>{team.intPlayed}</td>
+                                            <td>{team.intWin}</td>
+                                            <td>{team.intDraw}</td>
+                                            <td>{team.intLoss}</td>
+                                            <td><strong>{team.intPoints}</strong></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </Carousel.Item>
-            </Carousel>
+                    </Carousel.Item>
+
+                    {/* All Team Fixtures */}
+                    {teamMatches.length > 5 && (
+                        <Carousel.Item>
+                            <div className="dashboard-widget">
+                                <h3>All {teamName} Fixtures</h3>
+                                <div className="matches-list">
+                                    {teamMatches.map(match => {
+                                        const isHome = match.idHomeTeam === activeTeamId;
+                                        return (
+                                            <div key={match.idEvent} className="match-item favorite-match">
+                                                <div className="match-date">
+                                                    {match.dateEvent} - {match.strTime || 'TBD'}
+                                                </div>
+                                                <div className="match-teams">
+                                                    <span className={isHome ? 'team-bold' : ''}>{match.strHomeTeam}</span>
+                                                    <span className="vs">vs</span>
+                                                    <span className={!isHome ? 'team-bold' : ''}>{match.strAwayTeam}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </Carousel.Item>
+                    )}
+                </Carousel>
+            </div>
         );
     }
 }

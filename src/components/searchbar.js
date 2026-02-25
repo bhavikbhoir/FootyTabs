@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import{FiSearch} from 'react-icons/fi';
 import {MdArrowDropDown} from 'react-icons/md'
-import './styles.css';
+import './searchbar.scss';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { Row, Col } from 'react-bootstrap';
 import { DiBingSmall } from "react-icons/di";
@@ -100,9 +100,9 @@ export default class Searchbar extends Component {
         }
     render() {
         return (
-            <div className="search"  onLoad={this.handleload}>
+            <div className="searchbar-container" onLoad={this.handleload}>
 
-                <form method = "get" action="https://www.google.com/search?q=" target="_top" style={{display: this.state.gdisplay}}>
+                <form method="get" action="https://www.google.com/search?q=" target="_top" style={{display: this.state.gdisplay}}>
                     <div className="searchbar">
                         <input type="text" placeholder="Search Google" id="q" name="q" title="" alt="Search Text" maxLength="256" />
                         <button type="submit" id="searchsubmit">

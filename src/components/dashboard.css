@@ -7,14 +7,65 @@
     font-size: 16px;
 }
 
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+.last-updated {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+}
+
+.refresh-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s;
+}
+
+.refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(180deg);
+}
+
 .dashboard-widget {
     background: rgba(255, 255, 255, 0.98);
     border-radius: 12px;
     padding: 20px;
-    min-height: 300px;
+    min-height: 320px;
     max-height: 350px;
     overflow-y: auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-widget::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dashboard-widget::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.dashboard-widget::-webkit-scrollbar-thumb {
+    background: #3bafda;
+    border-radius: 10px;
+}
+
+.dashboard-widget::-webkit-scrollbar-thumb:hover {
+    background: #2a9bc4;
 }
 
 .dashboard-widget h3 {
@@ -60,6 +111,21 @@
 .player-name {
     font-weight: 600;
     color: #222;
+}
+
+.favorite-team {
+    background: #e3f2fd !important;
+    border-left: 4px solid #3bafda;
+}
+
+.favorite-team:hover {
+    background: #bbdefb !important;
+}
+
+.favorite-match {
+    border-left-color: #3bafda;
+    border-left-width: 4px;
+    background: #e3f2fd;
 }
 
 .matches-list {
@@ -120,8 +186,144 @@
     color: #3bafda;
 }
 
+/* Team Overview Styles */
+.team-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.team-stat {
+    text-align: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+.stat-value.form-string {
+    font-size: 14px;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+.team-record {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.record-item {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.record-item.win {
+    color: #4caf50;
+}
+
+.record-item.draw {
+    color: #ff9800;
+}
+
+.record-item.loss {
+    color: #f44336;
+}
+
+/* Match Result Styles */
+.result-item {
+    position: relative;
+}
+
+.match-teams .score {
+    font-weight: 700;
+    color: #333;
+    padding: 0 8px;
+}
+
+.match-teams .team-bold {
+    font-weight: 700;
+    color: #3bafda;
+}
+
+.result-badge {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    color: white;
+}
+
+.result-badge.w {
+    background: #4caf50;
+}
+
+.result-badge.d {
+    background: #ff9800;
+}
+
+.result-badge.l {
+    background: #f44336;
+}
+
 /* Carousel controls */
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     filter: invert(1);
+    width: 30px;
+    height: 30px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    opacity: 0.7;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+.carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+
+.carousel-indicators {
+    bottom: -30px;
+}
+
+.carousel-indicators button {
+    background-color: rgba(255, 255, 255, 0.5);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.carousel-indicators button.active {
+    background-color: white;
 }
