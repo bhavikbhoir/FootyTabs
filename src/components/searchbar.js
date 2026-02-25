@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
-import{FiSearch, FiArrowDown} from 'react-icons/fi';
+import{FiSearch} from 'react-icons/fi';
 import {MdArrowDropDown} from 'react-icons/md'
 import './styles.css';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { Row, Col } from 'react-bootstrap';
 import { DiBingSmall } from "react-icons/di";
-import { DropdownHeader } from 'semantic-ui-react';
 
 const ENGINE_LS = 'engine';
 const Google_LS = 'gdisplay';
@@ -121,7 +119,7 @@ export default class Searchbar extends Component {
                             
                             <Col>
                             <Dropdown.Menu>
-                                <DropdownHeader>SEARCH WITH</DropdownHeader>
+                                <Dropdown.Header>SEARCH WITH</Dropdown.Header>
                                 <Dropdown.Item><button onClick={this.handleg}><img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="google-logo"/> Google</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handleb}><DiBingSmall /> Bing</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handled}><img src="https://img.icons8.com/color/24/000000/duckduckgo--v1.png" alt="duckduckgo-logo"/> DuckDuckGo</button></Dropdown.Item>
@@ -150,7 +148,7 @@ export default class Searchbar extends Component {
                             
                             <Col>
                             <Dropdown.Menu>
-                                <DropdownHeader>SEARCH WITH</DropdownHeader>
+                                <Dropdown.Header>SEARCH WITH</Dropdown.Header>
                                 <Dropdown.Item><button onClick={this.handleg}><img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="google-logo"/> Google</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handleb}><DiBingSmall /> Bing</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handled}><img src="https://img.icons8.com/color/24/000000/duckduckgo--v1.png" alt="duckduckgo-logo"/> DuckDuckGo</button></Dropdown.Item>
@@ -179,7 +177,7 @@ export default class Searchbar extends Component {
                             
                             <Col>
                             <Dropdown.Menu>
-                                <DropdownHeader>SEARCH WITH</DropdownHeader>
+                                <Dropdown.Header>SEARCH WITH</Dropdown.Header>
                                 <Dropdown.Item><button onClick={this.handleg}><img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="google-logo"/> Google</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handleb}><DiBingSmall /> Bing</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handled}><img src="https://img.icons8.com/color/24/000000/duckduckgo--v1.png" alt="duckduckgo-logo"/> DuckDuckGo</button></Dropdown.Item>
@@ -208,7 +206,7 @@ export default class Searchbar extends Component {
                             
                             <Col>
                             <Dropdown.Menu>
-                                <DropdownHeader>SEARCH WITH</DropdownHeader>
+                                <Dropdown.Header>SEARCH WITH</Dropdown.Header>
                                 <Dropdown.Item><button onClick={this.handleg}><img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="google-logo"/> Google</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handleb}><DiBingSmall /> Bing</button></Dropdown.Item>
                                 <Dropdown.Item><button onClick={this.handled}><img src="https://img.icons8.com/color/24/000000/duckduckgo--v1.png" alt="duckduckgo-logo"/> DuckDuckGo</button></Dropdown.Item>

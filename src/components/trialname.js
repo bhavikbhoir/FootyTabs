@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-// import Landingpage from './landingpage';
+import React from 'react';
 
 const Trialname = (props) => {
     return (

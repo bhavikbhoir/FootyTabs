@@ -1,32 +1,13 @@
-// import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'weather-icons/css/weather-icons.css';
-import Landingpage from './components/landingpage';
-
-// class App extends Component {
-//   render() {
-//     return (
-//       <div className="App">  
-//         <Landingpage />   
-//       </div>
-//     );
-//   }
-// }
-
-// export default App;
-
 import React, {Component} from 'react';
 import {DateTime} from 'luxon';
 import Modal from 'react-modal';
-import '../src/components//styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'weather-icons/css/weather-icons.css';
+import '../src/components/styles.css';
 import {FiSettings} from 'react-icons/fi';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Dashboard from '../src/components/dashboard';
 import Searchbar from '../src/components/searchbar';
-// import Header from './Header';
 import Trialname from '../src/components/trialname';
 import Logo from './components/logo';
 
@@ -89,7 +70,7 @@ class App extends Component {
     this.setState({inputValue: e.target.value});
   }
 
-  componentWillMount() {
+  componentDidMount() {
     navigator.geolocation.getCurrentPosition(
       position =>
         this.setState(
@@ -102,13 +83,11 @@ class App extends Component {
           () => this.updateWeather()
         ),
       () => {
-        throw 'Error occured!';
+        // Geolocation denied - app will work without weather
       }
     );
     Modal.setAppElement('body');
-  }
 
-  componentDidMount() {
     const name = localStorage.getItem(JNAME_LS);
     if (name) {
       this.setState({name});
@@ -116,9 +95,19 @@ class App extends Component {
       this.setState({modalIsOpen: true});
     }
 
-    fetch('https://horizonshq.herokuapp.com/api/inspirationalquotes')
-      .then(resp => resp.json())
-      .then(resp => this.setState({quote: resp.message}));
+    // Set fallback quote immediately
+    this.setState({quote: 'Stay focused and never give up!'});
+    
+    // Try to fetch a better quote, but don't worry if it fails
+    fetch('https://api.quotable.io/random')
+      .then(resp => {
+        if (resp.ok) return resp.json();
+        throw new Error('API unavailable');
+      })
+      .then(resp => this.setState({quote: resp.content}))
+      .catch(() => {
+        // Silently fail - fallback quote already set
+      });
 
     setInterval(() => {
       var time = DateTime.local();
@@ -184,9 +173,9 @@ class App extends Component {
 
   getBGStyle(category = 'HK') {
     return {
-    //   backgroundImage: `url(https://source.unsplash.com/collection/10767820/1920x1080/daily?${category})`,
-      backgroundImage: `url(https://source.unsplash.com/lBhhnhndpE0/1920x1080/`,
+      backgroundImage: `url(${require('./assets/grass.jpg')})`,
       backgroundSize: 'cover',
+      backgroundPosition: 'center',
       height: '100vh',
       width: '100%',
       opacity: '0.9'
