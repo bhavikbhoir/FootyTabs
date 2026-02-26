@@ -28,21 +28,23 @@ export default class Dashboard extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        // Refresh when team changes
-        if (prevProps.favoriteTeam !== this.props.favoriteTeam) {
+        // Refresh when team or league changes
+        if (prevProps.favoriteTeam !== this.props.favoriteTeam || 
+            prevProps.selectedLeague !== this.props.selectedLeague) {
             // Clear old team data immediately
             this.setState({ 
                 teamInfo: null,
                 lastMatches: [],
                 currentTeamId: null
             });
-            this.fetchData();
+            // Add delay to avoid rate limiting
+            setTimeout(() => this.fetchData(), 1000);
         }
     }
 
     fetchData = () => {
-        const LEAGUE_ID = '4328'; // Premier League
-        const { favoriteTeam } = this.props;
+        const { selectedLeague, favoriteTeam } = this.props;
+        const LEAGUE_ID = selectedLeague || '4328';
 
         this.setState({ loading: true });
 
@@ -95,13 +97,23 @@ export default class Dashboard extends Component {
 
     render() {
         const { standings, matches, lastMatches, teamInfo, loading, currentTeamId } = this.state;
-        const { favoriteTeam } = this.props;
+        const { favoriteTeam, selectedLeague } = this.props;
         
         // Use currentTeamId from state to ensure data consistency
         const activeTeamId = currentTeamId || favoriteTeam;
 
+        // Get league name
+        const LEAGUES = [
+            { id: '4328', name: 'Premier League' },
+            { id: '4335', name: 'La Liga' },
+            { id: '4332', name: 'Serie A' },
+            { id: '4331', name: 'Bundesliga' },
+            { id: '4334', name: 'Ligue 1' }
+        ];
+        const currentLeague = LEAGUES.find(l => l.id === selectedLeague) || LEAGUES[0];
+
         if (loading && !standings.length) {
-            return <div className="dashboard-loading">Loading Premier League data...</div>;
+            return <div className="dashboard-loading">Loading {currentLeague.name} data...</div>;
         }
 
         // Filter matches for favorite team
@@ -215,7 +227,7 @@ export default class Dashboard extends Component {
                     {/* League Table */}
                     <Carousel.Item>
                         <div className="dashboard-widget">
-                            <h3>Premier League Table</h3>
+                            <h3>{currentLeague.name} Table</h3>
                             <table className="standings-table">
                                 <thead>
                                     <tr>

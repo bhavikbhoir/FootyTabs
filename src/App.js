@@ -4,6 +4,7 @@ import Modal from 'react-modal';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'weather-icons/css/weather-icons.css';
 import '../src/components/styles.css';
+import '../src/styles/dark-mode.css';
 import {FiSettings} from 'react-icons/fi';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Dashboard from '../src/components/dashboard';
@@ -14,10 +15,13 @@ import Settings from './components/Settings';
 import { analytics } from './firebase';
 import { logEvent } from 'firebase/analytics';
 import { DEFAULT_TEAM } from './constants/teams';
+import { DEFAULT_LEAGUE } from './constants/leagues';
 
 
 const JNAME_LS = 'JNAME_LS';
 const TEAM_LS = 'TEAM_LS';
+const DARK_MODE_LS = 'DARK_MODE';
+const LEAGUE_LS = 'LEAGUE';
 
 const customStyles = {
   content: {
@@ -59,9 +63,11 @@ class App extends Component {
       modalIsOpen: false,
       inputValue: '',
       favoriteTeam: localStorage.getItem(TEAM_LS) || DEFAULT_TEAM,
+      selectedLeague: localStorage.getItem(LEAGUE_LS) || DEFAULT_LEAGUE,
       settingsOpen: false,
       useFahrenheit: localStorage.getItem('TEMP_UNIT') === 'F',
-      weatherDescription: null
+      weatherDescription: null,
+      darkMode: localStorage.getItem(DARK_MODE_LS) === 'true'
     };
 
     this.closeModal = this.closeModal.bind(this);
@@ -69,6 +75,20 @@ class App extends Component {
     this.toggleSettings = this.toggleSettings.bind(this);
     this.handleTeamChange = this.handleTeamChange.bind(this);
     this.toggleTempUnit = this.toggleTempUnit.bind(this);
+    this.toggleDarkMode = this.toggleDarkMode.bind(this);
+    this.handleLeagueChange = this.handleLeagueChange.bind(this);
+  }
+
+  handleLeagueChange(leagueId) {
+    this.setState({ selectedLeague: leagueId });
+    localStorage.setItem(LEAGUE_LS, leagueId);
+  }
+
+  toggleDarkMode() {
+    const newMode = !this.state.darkMode;
+    this.setState({ darkMode: newMode });
+    localStorage.setItem(DARK_MODE_LS, newMode.toString());
+    document.body.classList.toggle('dark-mode', newMode);
   }
 
   toggleTempUnit() {
@@ -98,6 +118,11 @@ class App extends Component {
   }
 
   componentDidMount() {
+    // Apply dark mode on mount
+    if (this.state.darkMode) {
+      document.body.classList.add('dark-mode');
+    }
+
     navigator.geolocation.getCurrentPosition(
       position =>
         this.setState(
@@ -188,7 +213,7 @@ class App extends Component {
     if (!this.state.weatherAPIKey) return;
     
     fetch(
-      `http://api.openweathermap.org/data/2.5/weather?APPID=${
+      `https://api.openweathermap.org/data/2.5/weather?APPID=${
         this.state.weatherAPIKey
       }&lat=${this.state.geolocation.latitude}&lon=${
         this.state.geolocation.longitude
@@ -305,7 +330,10 @@ class App extends Component {
           </div>
           <div className="center-right dashboard">
             <h3>Your dashboard</h3>
-            <Dashboard favoriteTeam={this.state.favoriteTeam} />
+            <Dashboard 
+              favoriteTeam={this.state.favoriteTeam} 
+              selectedLeague={this.state.selectedLeague}
+            />
           </div>
           <div className="text-center bottom-third quote">
             <div id="quote-text">{this.state.quote}</div>
@@ -323,7 +351,11 @@ class App extends Component {
             onClose={this.toggleSettings}
             favoriteTeam={this.state.favoriteTeam}
             onTeamChange={this.handleTeamChange}
+            selectedLeague={this.state.selectedLeague}
+            onLeagueChange={this.handleLeagueChange}
             onLogout={this.logout}
+            darkMode={this.state.darkMode}
+            onToggleDarkMode={this.toggleDarkMode}
           />
           </div>
         </div>
